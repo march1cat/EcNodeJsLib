@@ -13,6 +13,17 @@ class StringTool {
         return re.exec(data);
     }
 
+    parsingUrl(url){
+        let ans = this.regSearch('^(.*)://([A-Za-z0-9\-\.]+):([0-9]+)?(.*)$' , url);
+        let data = {
+            protocol : ans[1] ,
+            host : ans[2] ,
+            port : ans[3] ,
+            path : ans[4] ,
+        }
+        return data;
+    }
+
     regValidate (regExpText , data){
         const re = new RegExp(regExpText);
         return re.test(data);
