@@ -19,15 +19,23 @@ class HttpClient extends Basis {
                 if (useHttps){
                     request = https.get(url, function( response ) {
                         response.setEncoding('utf8');
+                        let body = '';
                         response.on('data', (chunk) => {
-                            resovle(chunk);
+                            body += chunk;
+                        });
+                        response.on('end', (chunk) => {
+                            resovle(body);
                         });
                     });
                 } else {
                     request = http.get(url, function( response ) {
                         response.setEncoding('utf8');
+                        let body = '';
                         response.on('data', (chunk) => {
-                            resovle(chunk);
+                            body += chunk;
+                        });
+                        response.on('end', (chunk) => {
+                            resovle(body);
                         });
                     });
                 }
