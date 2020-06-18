@@ -17,6 +17,13 @@ class EcHttpPath extends Basis {
     appendedPath = null;
     auth = null;
 
+    header = {
+        ContentType: {
+           Key : "Content-Type" , 
+           Value : "application/json"  
+        }
+    }
+
     constructor(urlPath){
         super();
         this.parse(urlPath);
@@ -61,6 +68,10 @@ class EcHttpPath extends Basis {
 
     getFullUrl(){
         return this.getProtocol() + "://" + this.getHost() + ( ![80 , 443].includes(this.getPort()) ? ":" + this.getPort() : "") + "/" + this.getPath();
+    }
+
+    getHeader(){
+        return this.header;
     }
 
 

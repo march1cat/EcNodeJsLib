@@ -50,54 +50,48 @@ class HttpClient extends Basis {
 
 
 
-    post (url, data ) {
+    post (ecHttpPath , data ) {
         return new Promise(
             (resovle , reject) => {
-                const strTool = new StringTool();
-                let urlVars = strTool.parsingUrl(url);
+                process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 
                 const options = {
-                    hostname: urlVars.host,
-                    port: urlVars.port,
-                    path: urlVars.path,
-                    method: 'POST',
+                    hostname: ecHttpPath.getHost(),
+                    port: ecHttpPath.getPort(),
+                    path: ecHttpPath.getPath(),
+                    method: 'POST' ,
                     headers: {
-                      'Content-Type': 'application/json',
-                      'Content-Length': data.length
+                        'Content-Length': data.length
                     }
                 }
-                var request = null;
-                const useHttps = strTool.regValidate('https.*?' , url);
-                if (useHttps){
-                    request = https.request(options, response => {
-                        response.setEncoding('utf8');
-                        let body = '';
-                        response.on('data', (chunk) => {
-                            body += chunk;
-                        });
-                        response.on('end', (chunk) => {
-                            resovle(body);
-                        });
-                    })
-                } else {
-                    request = http.request(options, response => {
-                        response.setEncoding('utf8');
-                        let body = '';
-                        response.on('data', (chunk) => {
-                            resovle(chunk);
-                        });
-                        response.on('end', (chunk) => {
-                            resovle(body);
-                        });
-                    })
+                let headerAttributes = Object.keys(ecHttpPath.getHeader());
+                headerAttributes.forEach(headerAttribute => {
+                    options.headers[ ecHttpPath.getHeader()[headerAttribute].Key ] = ecHttpPath.getHeader()[headerAttribute].Value;
+                });
+
+                if(ecHttpPath.getBasicAuth()) options.headers = {
+                    'Authorization' : ecHttpPath.getBasicAuth()
                 }
-                  
-                request.on('error', error => {
-                    reject(error);
-                })
+               
+                let httpTool = ecHttpPath.getProtocol() == EcHttpPath.HTTP_PROTOCOL.HTTP ? http : https;
+                let request = httpTool.request(options, function( response ) {
+                    response.setEncoding('utf8');
+                    let body = '';
+                    response.on('data', (chunk) => {
+                        body += chunk;
+                    });
+                    response.on('end', (chunk) => {
+                        resovle(body);
+                    });
+                });
+
+                if(request != null) {
+                    request.on('error' , err => {
+                        reject(err);
+                    });
+                }
                 request.write(data);
                 request.end();
-
             }
         );
     }
