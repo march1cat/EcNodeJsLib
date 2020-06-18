@@ -31,7 +31,7 @@ class RequestHandler extends Basis {
     }
 
     bindOnRequest(routePath , onRequest){
-        this.routePath = routePath;
+        this.routePath = routePath.startsWith('/') ? routePath : "/" + routePath;
         this.onRequest = onRequest;
     }
 

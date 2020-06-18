@@ -7,6 +7,7 @@ class HttpOperation extends Basis{
     res = null;
     param = null;
     body = null;
+    query = null;
 
     constructor(req , res){
         super();
@@ -14,11 +15,22 @@ class HttpOperation extends Basis{
         this.res = res;
         this.param = this.req.params;
         this.body = this.req.body;
+        this.query = this.req.query;
     }
 
 
     getRequest(){
         return this.req;
+    }
+
+    getParams(){
+        //Path Variable
+        return this.param;
+    }
+
+    getQuery(){
+        //Query String
+        return this.query;
     }
 
     getResponse(){

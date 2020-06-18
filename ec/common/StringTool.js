@@ -25,14 +25,26 @@ class StringTool {
     }
 
     parsingUrl(url){
-        let ans = this.regSearch('^(.*)://([A-Za-z0-9\-\.]+):([0-9]+)?(.*)$' , url);
-        let data = {
-            protocol : ans[1] ,
-            host : ans[2] ,
-            port : ans[3] ,
-            path : ans[4] ,
+        
+        try {
+            let ans = this.regSearch('^(.*)://([A-Za-z0-9\-\.]+):([0-9]+)?(.*)$' , url);
+            let data = {
+                protocol : ans[1] ,
+                host : ans[2] ,
+                port : ans[3] ,
+                path : ans[4] ,
+            }
+            return data;
+        } catch(err){
+            let ans = this.regSearch('^(.*)://([A-Za-z0-9\-\.]+)/(.*)$' , url);
+            let data = {
+                protocol : ans[1] ,
+                host : ans[2] ,
+                path : ans[3] ,
+            }
+            data.port = data.protocol.toLocaleLowerCase() == 'https' ? 443 : 80;
+            return data;
         }
-        return data;
     }
 
     regValidate (regExpText , data){

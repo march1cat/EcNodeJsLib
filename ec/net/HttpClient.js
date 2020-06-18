@@ -2,6 +2,7 @@
 const Basis = require('../system/Basis').Basis;
 const http = require('http');
 const https = require('https');
+const EcHttpPath = require("../common/EcHttpPath").EcHttpPath;
 const StringTool = require('../common/StringTool').StringTool;
 
 class HttpClient extends Basis {
@@ -10,35 +11,33 @@ class HttpClient extends Basis {
         super();
     }
 
-    get(url){
+   
+    get(ecHttpPath){
         return new Promise (
             (resovle , reject) => {
-                const strTool = new StringTool();
-                var request = null;
-                const useHttps = strTool.regValidate('https.*?' , url);
-                if (useHttps){
-                    request = https.get(url, function( response ) {
-                        response.setEncoding('utf8');
-                        let body = '';
-                        response.on('data', (chunk) => {
-                            body += chunk;
-                        });
-                        response.on('end', (chunk) => {
-                            resovle(body);
-                        });
-                    });
-                } else {
-                    request = http.get(url, function( response ) {
-                        response.setEncoding('utf8');
-                        let body = '';
-                        response.on('data', (chunk) => {
-                            body += chunk;
-                        });
-                        response.on('end', (chunk) => {
-                            resovle(body);
-                        });
-                    });
+                process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
+                const options = {
+                    hostname: ecHttpPath.getHost(),
+                    port: ecHttpPath.getPort(),
+                    path: ecHttpPath.getPath(),
+                    method: 'GET' 
                 }
+                if(ecHttpPath.getBasicAuth()) options.headers = {
+                    'Authorization' : ecHttpPath.getBasicAuth()
+                }
+
+                let httpTool = ecHttpPath.getProtocol() == EcHttpPath.HTTP_PROTOCOL.HTTP ? http : https;
+                let request = httpTool.get(options, function( response ) {
+                    response.setEncoding('utf8');
+                    let body = '';
+                    response.on('data', (chunk) => {
+                        body += chunk;
+                    });
+                    response.on('end', (chunk) => {
+                        resovle(body);
+                    });
+                });
+
                 if(request != null) {
                     request.on('error' , err => {
                         reject(err);
@@ -47,6 +46,8 @@ class HttpClient extends Basis {
             }
         );
     }
+
+
 
 
     post (url, data ) {
