@@ -42,10 +42,10 @@ class RestfulService extends Basis {
             }
             switch (handler.httpMethod) {
                 case RequestHandler.HTTP_METHOD.GET : 
-                    app.get( handler.routePath , appReqProcess);
+                    app.get( handler.routePath , appReqProcess.bind(this));
                     break;
                 case RequestHandler.HTTP_METHOD.POST : 
-                    app.post( handler.routePath , appReqProcess);
+                    app.post( handler.routePath , appReqProcess.bind(this));
                     break;
             }
 
