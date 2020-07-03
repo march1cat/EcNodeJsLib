@@ -49,8 +49,12 @@ class HttpClient extends Basis {
 
 
 
+    patch(ecHttpPath , data ){
+        return this.post(ecHttpPath , data , "PATCH");
+    }
 
-    post (ecHttpPath , data ) {
+    post (ecHttpPath , data  , method) {
+        if(!method) method = "POST";
         return new Promise(
             (resovle , reject) => {
                 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
@@ -59,7 +63,7 @@ class HttpClient extends Basis {
                     hostname: ecHttpPath.getHost(),
                     port: ecHttpPath.getPort(),
                     path: ecHttpPath.getPath(),
-                    method: 'POST' ,
+                    method: method ,
                     headers: {
                         'Content-Length': data.length
                     }
