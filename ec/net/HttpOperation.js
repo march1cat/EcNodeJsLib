@@ -40,7 +40,7 @@ class HttpOperation extends Basis{
     getBody(){
         return this.body;
     }
-
+   
     responseToClient(data){
         this.res.send(data);
     }
