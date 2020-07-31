@@ -12,7 +12,8 @@ class HttpClient extends Basis {
     }
 
    
-    get(ecHttpPath){
+    get(ecHttpPath , method){
+        if(!method) method = "GET";
         return new Promise (
             (resovle , reject) => {
                 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
@@ -20,7 +21,7 @@ class HttpClient extends Basis {
                     hostname: ecHttpPath.getHost(),
                     port: ecHttpPath.getPort(),
                     path: ecHttpPath.getPath(),
-                    method: 'GET' 
+                    method: method
                 }
                 if(ecHttpPath.getBasicAuth()) options.headers = {
                     'Authorization' : ecHttpPath.getBasicAuth()
@@ -47,7 +48,10 @@ class HttpClient extends Basis {
         );
     }
 
-
+    delete(ecHttpPath , data){
+        if(data) return this.post(ecHttpPath , data , "DELETE");
+        else return this.get(ecHttpPath , "DELETE");
+    }
 
     patch(ecHttpPath , data ){
         return this.post(ecHttpPath , data , "PATCH");
