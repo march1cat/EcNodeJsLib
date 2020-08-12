@@ -1,5 +1,6 @@
 'use restrict';
 const Basis = require('./Basis').Basis;
+const Logger = require("./Logger").Logger;
 
 
 class ApplicationMain extends Basis {
@@ -20,6 +21,9 @@ class ApplicationMain extends Basis {
         process.AppConfig = configObject;
     }
 
+    mountLog4JS(saveToPath){
+        Logger.embedLog4JS(saveToPath)
+    }
 
     async main(args){
         //wait to override

@@ -31,7 +31,7 @@ class DailyJob extends Basis {
     }
 
     start( executeFunc ){
-        this.log("Start Daily Job " + (this.jobName != null ? "(" + this.jobName +  ")" : "")  + " , execute time = " + this.scheduleSetting);
+        this.log("Start Schedule Job " + (this.jobName != null ? "(" + this.jobName +  ")" : "")  + " , execute time = " + this.scheduleSetting);
         schedule.scheduleJob( this.scheduleSetting ,  () => {
             this.log("Prepare execute Daily Job " + (this.jobName != null ? "(" + this.jobName +  ")" : ""));
             executeFunc();

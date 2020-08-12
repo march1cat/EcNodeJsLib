@@ -9,6 +9,8 @@ const express = require('express');
 
 class RestfulService extends Basis {
 
+    allowCrossDomain = true;
+
     constructor(){
         super();
     }
@@ -31,15 +33,19 @@ class RestfulService extends Basis {
             }
             
             let appReqProcess = function(request , response) {
+                if(this.allowCrossDomain) {
+                    response.header("Access-Control-Allow-Origin", "*");
+                    response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+                }
                 const op = new HttpOperation(request , response);
                 handler.onHttpRequest(op);
             }
             switch (handler.httpMethod) {
                 case RequestHandler.HTTP_METHOD.GET : 
-                    app.get( handler.routePath , appReqProcess);
+                    app.get( handler.routePath , appReqProcess.bind(this));
                     break;
                 case RequestHandler.HTTP_METHOD.POST : 
-                    app.post( handler.routePath , appReqProcess);
+                    app.post( handler.routePath , appReqProcess.bind(this));
                     break;
             }
 
@@ -55,6 +61,10 @@ class RestfulService extends Basis {
                 }
             }
         );
+    }
+
+    disalbleCrossDomain(){
+        this.allowCrossDomain = false;
     }
 
 }
