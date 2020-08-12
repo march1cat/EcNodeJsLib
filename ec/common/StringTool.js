@@ -19,6 +19,16 @@ class StringTool {
         return  time;
     }
 
+    toFormatDate(date , delimiter){
+        let sep = delimiter ? delimiter : "";
+        return date.getFullYear()+ sep +(date.getMonth()+1).toString().padStart(2,'0') + sep + date.getDate().toString().padStart(2,'0');
+    }
+
+    toFormatTime(date , delimiter){
+        let sep = delimiter ? delimiter : "";
+        return date.getHours().toString().padStart(2,'0') + sep + date.getMinutes().toString().padStart(2,'0') + sep + date.getSeconds().toString().padStart(2,'0');
+    }
+
     regSearch (regExpText , data) {
         const re = new RegExp(regExpText);
         return re.exec(data);
