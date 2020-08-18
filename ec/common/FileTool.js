@@ -3,9 +3,10 @@ const filesys = require('fs');
 const readline = require('readline');
 
 class FileTool {
-    mkdir (dir){
+    mkdir (dir , recursive){
         if (!filesys.existsSync(dir)){
-            filesys.mkdirSync(dir);
+            if(!recursive) recursive = false;
+            filesys.mkdirSync(dir , { recursive: recursive });
         }
     }
 

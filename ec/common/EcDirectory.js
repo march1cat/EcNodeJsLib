@@ -11,7 +11,7 @@ class EcDirectory extends Basis {
         this.uri = uri;
         if(autoGenerate) {
             const fileTool = new FileTool();
-            fileTool.mkdir(uri);
+            fileTool.mkdir(uri , true);
         }
     }
 
