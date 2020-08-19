@@ -97,9 +97,10 @@ class HttpClient extends Basis {
                     request.on('error' , err => {
                         reject(err);
                     });
+                    request.write(data);
+                    request.end();
                 }
-                request.write(data);
-                request.end();
+                
             }
         );
     }
