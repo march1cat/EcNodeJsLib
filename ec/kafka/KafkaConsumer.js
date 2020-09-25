@@ -13,39 +13,36 @@ class KafkaConsumer extends KafkaTool {
 
     start(groupId , topic , offset , onMessage , onError) {
         let consumer = this.kafkaConn.buildConsumer(groupId , topic , offset , this.isAvroActivated());
-        consumer.on('message', message => {
+        consumer.on('message', async (message) => {
             if(this.isAvroActivated()){
-                this.decodeMessage(message).then( data => {
+                try {
+                    let data = await this.decodeMessage(message);
                     if(this.doPrintLog) this.log(`[${topic}] Consume Message , ` , data);
-                    onMessage(data);
-                }).catch(err => onError(err));
+                    if(onMessage) onMessage(data);
+                } catch(err){
+                    if(onError) onError(err);
+                    else this.log("Error : " , err);
+                }
             } else {
                 if(this.doPrintLog) this.log(`[${topic}] Consume Message , ` , message);
-                onMessage(message);
+                if(onMessage) onMessage(message);
             }
         });
         consumer.on('error', message => {
             if(onError) onError(message);
+            else this.log("Error : " , message);
         });
     }
 
-    decodeMessage(message){
-        return new Promise(
-           async (resolve , reject) => {
-                try {
-                    if (message.value.readUInt8(0) === 0) {
-                        let schemaId = message.value.readUInt32BE(1);
-                        let res = await this.schemaRegistry.getSchemaById(schemaId);
-                        let schema = JSON.parse(res.schema);
-                        let data = AvroConvert.decode(schema , message.value.slice(5));
-                        message.value = data;
-                        resolve(message);
-                    }
-                } catch(err){
-                    reject(err);
-                }
-            }
-        );
+    async decodeMessage(message){
+        if (message.value.readUInt8(0) === 0) {
+            let schemaId = message.value.readUInt32BE(1);
+            let res = await this.schemaRegistry.getSchemaById(schemaId);
+            let schema = JSON.parse(res.schema);
+            let data = AvroConvert.decode(schema , message.value.slice(5));
+            message.value = data;
+            return message;
+        }
     }
 
 }

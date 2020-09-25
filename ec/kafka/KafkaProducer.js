@@ -66,40 +66,32 @@ class KafkaProducer extends KafkaTool {
         );
     }
 
-    encodeToAvroByTopic(topic , message){
-        return new Promise(
-            async (resolve , reject) => {
-                try {
-                    let schemaData = await this.schemaRegistry.getLatestSchema(topic);
-                    let schemaId = schemaData.id;
-                    let schema = JSON.parse(schemaData.schema);
+    async encodeToAvroByTopic(topic , message){
+        let schemaData = await this.schemaRegistry.getLatestSchema(topic);
+        let schemaId = schemaData.id;
+        let schema = JSON.parse(schemaData.schema);
 
-                    if(message instanceof Array){
-                        let results = [];
-                        message.forEach(
-                            item => {
-                                let buf = AvroConvert.encode(schema, item);
-                                let result = Buffer.alloc(buf.length + 5);
-                                result.writeUInt8(0);
-                                result.writeUInt32BE(schemaId, 1);
-                                buf.copy(result, 5);
-                                results.push(result);
-                            }
-                        );
-                        resolve(results);
-                    } else {
-                        let buf = AvroConvert.encode(schema, message);
-                        let result = Buffer.alloc(buf.length + 5);
-                        result.writeUInt8(0);
-                        result.writeUInt32BE(schemaId, 1);
-                        buf.copy(result, 5);
-                        resolve(result);
-                    }
-                } catch (err){
-                    reject(err);
+        if(message instanceof Array){
+            let results = [];
+            message.forEach(
+                item => {
+                    let buf = AvroConvert.encode(schema, item);
+                    let result = Buffer.alloc(buf.length + 5);
+                    result.writeUInt8(0);
+                    result.writeUInt32BE(schemaId, 1);
+                    buf.copy(result, 5);
+                    results.push(result);
                 }
-            }
-        );
+            );
+            return results;
+        } else {
+            let buf = AvroConvert.encode(schema, message);
+            let result = Buffer.alloc(buf.length + 5);
+            result.writeUInt8(0);
+            result.writeUInt32BE(schemaId, 1);
+            buf.copy(result, 5);
+            return result;
+        }
     }
 
 
