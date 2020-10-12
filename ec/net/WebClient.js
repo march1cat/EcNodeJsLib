@@ -17,17 +17,39 @@ class WebClient extends Basis {
 
     async getAsDom (url){
         try {
-            var [response, body] = await this.get(url);
-            const { JSDOM } = jsdom;
-            const dom = new JSDOM(body);
-            return [dom.window.document , body];
+            var response = await this.get(url);
+            return response.document;
         } catch(error){
             throw error;
         }
     }
 
+    async getBody (url){
+        try {
+            var response = await this.get(url);
+            return response.body;
+        } catch(error){
+            throw error;
+        }
+    }
+
+    async get (url){
+        try {
+            var response = await this.httpGet(url);
+            const { JSDOM } = jsdom;
+            const dom = new JSDOM(response.body);
+            return {
+                document : dom.window.document , 
+                body : response.body
+            }
+        } catch(error){
+            throw error;
+        }
+    }
+
+
     //Normal get web page return html
-    get(url){
+    httpGet(url){
         return new Promise( 
             (resovle , reject) => {
                 this.log("Prepare connect url[" + decodeURIComponent(url) + "]");
@@ -37,7 +59,10 @@ class WebClient extends Basis {
                             reject(error);
                         } else {
                             this.log("Connect url[" + decodeURIComponent(url) + "] Success");
-                            resovle([response, body]);
+                            resovle({
+                                response : response , 
+                                body : body
+                            });
                         }
                     }
                 );
@@ -102,5 +127,5 @@ class WebClient extends Basis {
 
 
 module.exports = {
-    HttpClient : HttpClient
+    WebClient : WebClient
 }
