@@ -95,6 +95,9 @@ class WebClient extends Basis {
                             file.close(resovle);  // close() is async, call cb after close completes.
                         });
                     }
+                    const rollbackOnError = function(err){
+                        filesys.unlink(saveTo , () => reject(err));
+                    }
 
                     const strTool = new StringTool();
                     const useHttps = strTool.regValidate('https.*?' , url);
@@ -103,17 +106,22 @@ class WebClient extends Basis {
                         const errorCodes = [403 , 404];
                         if(!errorCodes.includes(response.statusCode)){
                             streamToFile(response);
-                        } else reject(`Download fail , Error Code : ${response.statusCode} , Url : ${url}`);
+                        } else {
+                            rollbackOnError( 
+                                {
+                                    ErrorCode : response.statusCode ,
+                                    Url : url 
+                                } 
+                            );
+                        }
                     });
                     
                     if(request != null) {
                         request.on('error' , err => {
-                            filesys.unlink(saveTo);
-                            reject(err);
+                            rollbackOnError(err);
                         });
                     } else {
-                        filesys.unlink(saveTo);
-                        reject(err);
+                        rollbackOnError(`request is null!!`);
                     }
                 } else {
                     resovle();
