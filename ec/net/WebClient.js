@@ -11,6 +11,10 @@ const StringTool = require('../common/StringTool').StringTool;
 
 class WebClient extends Basis {
 
+    static ConnectError = {
+        TIME_OUT : 'ETIMEDOUT'
+    }
+
 
     constructor (logger){
         super(logger);
@@ -118,7 +122,9 @@ class WebClient extends Basis {
                     
                     if(request != null) {
                         request.on('error' , err => {
-                            rollbackOnError(err);
+                            if(err.code == 'ETIMEDOUT') {
+                                rollbackOnError(WebClient.ConnectError.TIME_OUT);
+                            } else rollbackOnError(err);
                         });
                     } else {
                         rollbackOnError(`request is null!!`);
