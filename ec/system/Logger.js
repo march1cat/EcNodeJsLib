@@ -25,27 +25,38 @@ class Logger {
         else console.log(message);
     }
 
-    static embedLog4JS( saveToPath ){
+    static embedLog4JS( saveToPath , isDailyFile){
         try {
             const log4js = require('log4js');
             log4js.configure(
                 {
                     appenders:  {
                             std: { type: "stdout", level: "all", layout:{type: "basic", } },
-                            file: { type: "file", filename: saveToPath, encoding: "utf-8" }
+                            file: { type: "file", filename: saveToPath, encoding: "utf-8" } , 
+                            datefile : {
+                                type: 'dateFile' ,
+                                filename: saveToPath , 
+                                encoding: 'utf-8' , 
+                                pattern: "-yyyy-MM-dd",
+                                keepFileExt: true,
+                                alwaysIncludePattern: true,
+                            }
                     },
                     categories: {
                         default: {appenders: ["std"], level: "debug"},
-                        custom: {appenders: ["std", "file"], level: "all"}
+                        custom: {appenders: ["std", "file"], level: "all"} , 
+                        daily: {appenders: ["std", "datefile"], level: "all"}
                     }
                     
                 }
               )
-              Logger.log4jsLogger = log4js.getLogger('custom');
+              Logger.log4jsLogger = isDailyFile ? log4js.getLogger('daily') : log4js.getLogger('custom');
         } catch(e){
             console.log("Embed Log4JS fail , error = " , e);
         }
-    }
+    } 
+
+    
 
 }
 
