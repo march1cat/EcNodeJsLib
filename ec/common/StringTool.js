@@ -1,4 +1,4 @@
-'use restrict';
+'use strict';
 
 class StringTool {
     now(){
