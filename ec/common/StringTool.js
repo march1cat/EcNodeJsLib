@@ -65,6 +65,10 @@ class StringTool {
     isNumber(data){
         return !this.regValidate('[a-z|A-Z]' , data);
     }
+
+    formaFloat(value , keepPointLen){
+        return value.toFixed(keepPointLen);
+    }
 }
 
 
