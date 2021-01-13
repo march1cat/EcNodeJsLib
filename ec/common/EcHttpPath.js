@@ -48,7 +48,7 @@ class EcHttpPath extends Basis {
         this.auth = 'Basic ' + Buffer.from(username + ':' + userpwd).toString('base64');
     }
 
-    getBasicAuth(username , userpwd){
+    getAuth(){
         return this.auth;
     }
 

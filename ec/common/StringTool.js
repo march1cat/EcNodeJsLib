@@ -67,7 +67,7 @@ class StringTool {
     }
 
     formaFloat(value , keepPointLen){
-        return value.toFixed(keepPointLen);
+        return Number.parseFloat(value.toFixed(keepPointLen));
     }
 }
 

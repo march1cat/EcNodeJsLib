@@ -23,8 +23,8 @@ class HttpClient extends Basis {
                     path: ecHttpPath.getPath(),
                     method: method
                 }
-                if(ecHttpPath.getBasicAuth()) options.headers = {
-                    'Authorization' : ecHttpPath.getBasicAuth()
+                if(ecHttpPath.getAuth()) options.headers = {
+                    'Authorization' : ecHttpPath.getAuth()
                 }
 
                 let httpTool = ecHttpPath.getProtocol() == EcHttpPath.HTTP_PROTOCOL.HTTP ? http : https;
@@ -72,14 +72,17 @@ class HttpClient extends Basis {
                         'Content-Length': data.length
                     }
                 }
+
+                if(ecHttpPath.getAuth()) options.headers = {
+                    'Authorization' : ecHttpPath.getAuth()
+                }
+
                 let headerAttributes = Object.keys(ecHttpPath.getHeader());
                 headerAttributes.forEach(headerAttribute => {
                     options.headers[ ecHttpPath.getHeader()[headerAttribute].Key ] = ecHttpPath.getHeader()[headerAttribute].Value;
                 });
 
-                if(ecHttpPath.getBasicAuth()) options.headers = {
-                    'Authorization' : ecHttpPath.getBasicAuth()
-                }
+                
                
                 let httpTool = ecHttpPath.getProtocol() == EcHttpPath.HTTP_PROTOCOL.HTTP ? http : https;
                 let request = httpTool.request(options, function( response ) {
