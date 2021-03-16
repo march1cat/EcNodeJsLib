@@ -6,7 +6,7 @@ class KeycloakRealm {
 
     static build(name){
         let realm = new KeycloakRealm();
-        realm.name = realmName;
+        realm.name = name;
         return realm;
     }
 }
