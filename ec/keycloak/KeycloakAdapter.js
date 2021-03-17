@@ -62,8 +62,8 @@ class KeycloakAdapter {
         if (findUserResDatas && findUserResDatas.length){
             const target_user_id = findUserResDatas[0].id;
             let queryUri = `auth/admin/realms/${this.keycloakRealm.name}/users/${target_user_id}`;
-            const res = await this.deleteApi(queryUri , opSession.keycloakUser);
-            return res == "1";
+            await this.deleteApi(queryUri , opSession.keycloakUser);
+            return true;
         }  else throw new KeycloakError(`User[${username}] not exist!!`); 
     }
 
@@ -90,12 +90,30 @@ class KeycloakAdapter {
         let postData = {
             username : username
         }
-        const resData = await this.postApi(queryUri , JSON.stringify(postData) , "application/json" , opSession.keycloakUser);
-        return resData == "1";
+        await this.postApi(queryUri , JSON.stringify(postData) , "application/json" , opSession.keycloakUser);
+        return true;
     }
 
-    async mappingClientUserRole(){
-       
+    async mappingClientUserRole(opSession , username , keycloakRole){
+        let findUserResDatas = await this.findUser(opSession , username);
+        if(findUserResDatas && findUserResDatas.length) {
+            const target_user_id = findUserResDatas[0].id;
+            let queryUri = `auth/admin/realms/${this.keycloakRealm.name}/users/${target_user_id}/`;
+            queryUri += `role-mappings/clients/${this.keycloakClient.id}`;
+            let postData = [
+                {
+                    id : keycloakRole.id , 
+                    name : keycloakRole.name , 
+                    composite : keycloakRole.composite ,
+                    clientRole : true , 
+                    containerId : this.keycloakClient.id
+                }
+            ]
+            const res = await this.postApi(queryUri , JSON.stringify(postData) , "application/json" ,opSession.keycloakUser);
+            console.log("res = " , res);
+            return true;
+        } else throw new KeycloakError(`User[${username}] not exist!!`);  
+        
     }
 
 

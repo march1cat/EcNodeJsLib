@@ -4,6 +4,7 @@ class KeycloakRole {
 
     id = null;
     name = null;
+    composite = false;
 
     static newInstance(id , name){
         const role = new KeycloakRole();
