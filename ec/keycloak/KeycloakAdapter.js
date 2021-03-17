@@ -71,14 +71,13 @@ class KeycloakAdapter {
         return roles;
     }
 
-    async addUser(opSession , username , password){
+    async addUser(opSession , username){
         let queryUri = `auth/admin/realms/${this.keycloakRealm.name}/users`;
         let postData = {
-            username : username , 
-            password : password
+            username : username
         }
         const resData = await this.postApi(queryUri , JSON.stringify(postData) , "application/json" , opSession.keycloakUser);
-        return resData;
+        return resData == "1";
     }
 
     async mappingClientUserRole(){
@@ -91,9 +90,13 @@ class KeycloakAdapter {
         let httpClient = new HttpClient();
         try {
             const res = await httpClient.get(webPath);
-            let resData = JSON.parse(res);
-            if(resData.error) throw new KeycloakError(res);
-            return resData;
+            try {
+                let resData = JSON.parse(res);
+                if(resData.error) throw new KeycloakError(res);
+                return resData;
+            } catch(parseErr){
+                return res;
+            }
         } catch(err){
             throw err;
         }
@@ -105,9 +108,13 @@ class KeycloakAdapter {
         let httpClient = new HttpClient();
         try {
             const res = await httpClient.post(webPath , postData);
-            let resData = JSON.parse(res);
-            if(resData.error) throw new KeycloakError(res);
-            return resData;
+            try {
+                let resData = JSON.parse(res);
+                if(resData.error) throw new KeycloakError(res);
+                return resData;
+            } catch(parseErr){
+                return res;
+            }
         } catch (err) {
             throw err;
         }
