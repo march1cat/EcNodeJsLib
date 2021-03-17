@@ -30,13 +30,13 @@ class KeycloakAdapter {
             if(true){
                 let userInfoResData = await this.getUserInfo(user);
                 user.name = userInfoResData.name;
-                user.preferedName = userInfoResData.prefered_username;
+                user.preferedName = userInfoResData.preferred_username;
                 user.email = userInfoResData.email;
             }
 
             if(true){
                 let clients = await this.getRealmClients(session);
-                const clientData = clients.finds( client => client.clientId == this.keycloakClient.name);
+                const clientData = clients.find( client => client.clientId == this.keycloakClient.name);
                 this.keycloakClient.id = clientData.id;
             }
             return session;
@@ -59,8 +59,14 @@ class KeycloakAdapter {
 
     async getClientRoles( opSession ){
         let queryUri = `auth/admin/realms/${this.keycloakRealm.name}/clients/${this.keycloakClient.id}/roles`;
-        const resData = await this.getApi(queryUri , opSession.keycloakUser);
-        return resData;
+        const roleDatas = await this.getApi(queryUri , opSession.keycloakUser);
+        const roles = [];
+        roleDatas.forEach(roleData => {
+            roles.push(
+                KeycloakRole.newInstance(roleData.id , roleData.name)
+            )
+        });
+        return roles;
     }
 
 

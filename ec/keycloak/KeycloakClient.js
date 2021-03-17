@@ -1,11 +1,10 @@
 'use strict'
-
+const KeycloakRole = require("./KeycloakRole").KeycloakRole;
 class KeycloakClient {
 
     id = null;
     name = null;
     secretText = null;
-
 
     static build(name , secretText){
         let client = new KeycloakClient();
