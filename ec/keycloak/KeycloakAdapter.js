@@ -2,6 +2,7 @@
 const EcHttpPath = require("../common/EcHttpPath").EcHttpPath;
 const HttpClient = require("../net/HttpClient").HttpClient;
 const KeycloakError = require("./KeycloakError").KeycloakError;
+const KeycloakUser = require("./KeycloakUser").KeycloakUser;
 class KeycloakAdapter {
     
     serverHost = null;
@@ -10,7 +11,7 @@ class KeycloakAdapter {
     keycloakRealm = null;
     keycloakClient = null;
 
-    async getAccessToken(username , passord){
+    async login(username , passord){
         let url = `https://${this.serverHost}:${this.serverPort}`;
         let webPath = new EcHttpPath(url);
         webPath.appendPath(`auth/realms/${this.keycloakRealm.name}/protocol/openid-connect/token`);
@@ -24,11 +25,15 @@ class KeycloakAdapter {
         postData += `password=${passord}`;
         let res = await httpClient.post(webPath , postData);
         let resData = JSON.parse(res);
-        if(resData.error) throw new KeycloakError(resData);
-        return res;
+        if(resData.error) throw new KeycloakError(res);
+        else if (!resData.access_token)  throw new KeycloakError("access token missed!!")
+        else {
+            let user = new KeycloakUser.build(resData.access_token);
+            return user;
+        }
     }
 
-    static buildInHttps(serverHost , serverPort , keycloakRealm , keycloakClient){
+    static open(serverHost , serverPort , keycloakRealm , keycloakClient){
         let adapter = new KeycloakAdapter();
         adapter.serverHost = serverHost;
         adapter.serverPort = serverPort;

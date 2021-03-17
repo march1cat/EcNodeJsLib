@@ -4,6 +4,7 @@ class KeycloakError extends Error {
 
     errResponse = null;
     constructor(serverErrResponse){
+       super(serverErrResponse);
        this.errResponse = serverErrResponse;
     }
 }
