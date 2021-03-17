@@ -30,7 +30,7 @@ class KeycloakAdapter {
             let user = KeycloakUser.build(resData.access_token);
             const session = OperationSession.open(user);
             if(true){
-                let userInfoResData = await this.getUserInfo(user);
+                let userInfoResData = await this.validateToken(user.accessToken);
                 user.name = userInfoResData.name;
                 user.preferedName = userInfoResData.preferred_username;
                 user.email = userInfoResData.email;
@@ -45,8 +45,8 @@ class KeycloakAdapter {
         }
     }
 
-    async getUserInfo( data ){
-        let user =  ( data instanceof KeycloakUser) ? data : KeycloakUser.build(data);
+    async validateToken( accessToken ){
+        let user = KeycloakUser.build(accessToken);
         let queryUri = `auth/realms/${this.keycloakRealm.name}/protocol/openid-connect/userinfo`;
         const resData = await this.getApi(queryUri , user);
         return resData;
@@ -55,6 +55,16 @@ class KeycloakAdapter {
     async findUser(opSession , username) {
         let queryUri = `auth/admin/realms/${this.keycloakRealm.name}/users?username=${username}`;
         return await this.getApi(queryUri , opSession.keycloakUser);
+    }
+
+    async deleteUser(opSession , username){
+        let findUserResDatas = await this.findUser(opSession , username);
+        if (findUserResDatas && findUserResDatas.length){
+            const target_user_id = findUserResDatas[0].id;
+            let queryUri = `auth/admin/realms/${this.keycloakRealm.name}/users/${target_user_id}`;
+            const res = await this.deleteApi(queryUri , opSession.keycloakUser);
+            return res == "1";
+        }  else throw new KeycloakError(`User[${username}] not exist!!`); 
     }
 
     async getRealmClients( opSession ){
@@ -102,6 +112,23 @@ class KeycloakAdapter {
                 return res;
             }
         } catch(err){
+            throw err;
+        }
+    }
+
+    async deleteApi(queryUri , user){
+        let webPath = this.transToApiWebPath(queryUri , user);
+        let httpClient = new HttpClient();
+        try {
+            const res = await httpClient.delete(webPath);
+            try {
+                let resData = JSON.parse(res);
+                if(resData.error) throw new KeycloakError(res);
+                return resData;
+            } catch(parseErr){
+                return res;
+            }
+        } catch (err) {
             throw err;
         }
     }
