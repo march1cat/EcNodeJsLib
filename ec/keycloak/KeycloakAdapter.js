@@ -52,6 +52,10 @@ class KeycloakAdapter {
         return resData;
     }
 
+    async findUser(opSession , username) {
+        let queryUri = `auth/admin/realms/${this.keycloakRealm.name}/users?username=${username}`;
+        return await this.getApi(queryUri , opSession.keycloakUser);
+    }
 
     async getRealmClients( opSession ){
         let queryUri = `auth/admin/realms/${this.keycloakRealm.name}/clients`;
