@@ -89,20 +89,28 @@ class KeycloakAdapter {
     async getApi(queryUri , user){
         let webPath = this.transToApiWebPath(queryUri , user);
         let httpClient = new HttpClient();
-        const res = await httpClient.get(webPath);
-        let resData = JSON.parse(res);
-        if(resData.error) throw new KeycloakError(res);
-        return resData;
+        try {
+            const res = await httpClient.get(webPath);
+            let resData = JSON.parse(res);
+            if(resData.error) throw new KeycloakError(res);
+            return resData;
+        } catch(err){
+            throw err;
+        }
     }
 
     async postApi(queryUri , postData , postDataContentType , user){
         let webPath = this.transToApiWebPath(queryUri , user);
         webPath.getHeader().ContentType.Value = postDataContentType;
         let httpClient = new HttpClient();
-        const res = await httpClient.post(webPath , postData);
-        let resData = JSON.parse(res);
-        if(resData.error) throw new KeycloakError(res);
-        return resData;
+        try {
+            const res = await httpClient.post(webPath , postData);
+            let resData = JSON.parse(res);
+            if(resData.error) throw new KeycloakError(res);
+            return resData;
+        } catch (err) {
+            throw err;
+        }
     }
 
 
