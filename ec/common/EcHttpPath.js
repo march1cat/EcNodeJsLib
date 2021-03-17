@@ -48,6 +48,10 @@ class EcHttpPath extends Basis {
         this.auth = 'Basic ' + Buffer.from(username + ':' + userpwd).toString('base64');
     }
 
+    setBearerToken(token){
+        this.auth = 'Bearer ' + token;
+    }
+
     getAuth(){
         return this.auth;
     }

@@ -82,7 +82,7 @@ class HttpClient extends Basis {
                     options.headers[ ecHttpPath.getHeader()[headerAttribute].Key ] = ecHttpPath.getHeader()[headerAttribute].Value;
                 });
 
-                
+                console.log("post option = " , options);
                
                 let httpTool = ecHttpPath.getProtocol() == EcHttpPath.HTTP_PROTOCOL.HTTP ? http : https;
                 let request = httpTool.request(options, function( response ) {
