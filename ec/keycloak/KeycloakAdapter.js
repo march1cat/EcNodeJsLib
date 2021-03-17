@@ -85,10 +85,16 @@ class KeycloakAdapter {
         return roles;
     }
 
-    async addUser(opSession , username){
+    async addUser(opSession , username , password){
         let queryUri = `auth/admin/realms/${this.keycloakRealm.name}/users`;
         let postData = {
-            username : username
+            username : username ,
+            credentials : [
+                { type : "password",
+                  value : password,
+                  temporary : false
+                }
+            ]
         }
         await this.postApi(queryUri , JSON.stringify(postData) , "application/json" , opSession.keycloakUser);
         return true;
