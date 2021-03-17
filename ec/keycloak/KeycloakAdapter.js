@@ -1,7 +1,7 @@
 'use strict'
 const EcHttpPath = require("../common/EcHttpPath").EcHttpPath;
 const HttpClient = require("../net/HttpClient").HttpClient;
-
+const KeycloakError = require("./KeycloakError").KeycloakError;
 class KeycloakAdapter {
     
     serverHost = null;
@@ -23,6 +23,8 @@ class KeycloakAdapter {
         postData += `username=${username}&`;
         postData += `password=${passord}`;
         let res = await httpClient.post(webPath , postData);
+        let resData = JSON.parse(res);
+        if(resData.error) throw new KeycloakError(resData);
         return res;
     }
 
