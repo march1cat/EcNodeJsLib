@@ -1,11 +1,10 @@
 'use strict'
-const EcHttpPath = require("../common/EcHttpPath").EcHttpPath;
-const HttpClient = require("../net/HttpClient").HttpClient;
 const KeycloakError = require("./KeycloakError").KeycloakError;
 const KeycloakUser = require("./KeycloakUser").KeycloakUser;
 const OperationSession = require("./OperationSession").OperationSession;
 const KeycloakRole = require("./KeycloakRole").KeycloakRole;
 const UserOperation = require("./UserOpeation").UserOperation;
+const KeycloakAPI = require("./KeycloakAPI").KeycloakAPI;
 class KeycloakAdapter {
     
     serverHost = null;
@@ -15,6 +14,7 @@ class KeycloakAdapter {
     keycloakClient = null;
 
     User = new UserOperation(this);
+    API = new KeycloakAPI(this);
 
 
     async openSession(username , passord){
@@ -25,7 +25,7 @@ class KeycloakAdapter {
         postData += `client_secret=${this.keycloakClient.secretText}&`;
         postData += `username=${username}&`;
         postData += `password=${passord}`;
-        let resData = await this.postApi(queryUri , postData , "application/x-www-form-urlencoded");
+        let resData = await this.API.post(queryUri , postData , "application/x-www-form-urlencoded");
 
         if (!resData.access_token)  throw new KeycloakError("access token missed!!")
         else {
@@ -50,19 +50,19 @@ class KeycloakAdapter {
     async validateToken( accessToken ){
         let user = KeycloakUser.build(accessToken);
         let queryUri = `auth/realms/${this.keycloakRealm.name}/protocol/openid-connect/userinfo`;
-        const resData = await this.getApi(queryUri , user);
+        const resData = await this.API.get(queryUri , user);
         return resData;
     }
 
     async getRealmClients( opSession ){
         let queryUri = `auth/admin/realms/${this.keycloakRealm.name}/clients`;
-        const resData = await this.getApi(queryUri , opSession.keycloakUser);
+        const resData = await this.API.get(queryUri , opSession.keycloakUser);
         return resData;
     }
 
     async getClientRoles( opSession ){
         let queryUri = `auth/admin/realms/${this.keycloakRealm.name}/clients/${this.keycloakClient.id}/roles`;
-        const roleDatas = await this.getApi(queryUri , opSession.keycloakUser);
+        const roleDatas = await this.API.get(queryUri , opSession.keycloakUser);
         const roles = [];
         roleDatas.forEach(roleData => {
             roles.push(
@@ -90,85 +90,10 @@ class KeycloakAdapter {
                     containerId : this.keycloakClient.id
                 }
             ]
-            const res = await this.postApi(queryUri , JSON.stringify(postData) , "application/json" ,opSession.keycloakUser);
-            console.log("res = " , res);
+            const res = await this.API.post(queryUri , JSON.stringify(postData) , "application/json" ,opSession.keycloakUser);
             return true;
         } else throw new KeycloakError(`User[${username}] not exist!!`);  
         
-    }
-
-
-    async getApi(queryUri , user){
-        let webPath = this.transToApiWebPath(queryUri , user);
-        let httpClient = new HttpClient();
-        try {
-            const res = await httpClient.get(webPath);
-            try {
-                let resData = JSON.parse(res);
-                if(resData.error) throw new KeycloakError(res);
-                return resData;
-            } catch(parseErr){
-                return res;
-            }
-        } catch(err){
-            throw err;
-        }
-    }
-
-    async deleteApi(queryUri , user){
-        let webPath = this.transToApiWebPath(queryUri , user);
-        let httpClient = new HttpClient();
-        try {
-            const res = await httpClient.delete(webPath);
-            try {
-                let resData = JSON.parse(res);
-                if(resData.error) throw new KeycloakError(res);
-                return resData;
-            } catch(parseErr){
-                return res;
-            }
-        } catch (err) {
-            throw err;
-        }
-    }
-
-    async putApi(queryUri , postData , postDataContentType , user){
-        let webPath = this.transToApiWebPath(queryUri , user);
-        webPath.getHeader().ContentType.Value = postDataContentType;
-        return await this.invokeApi(webPath , postData , "PUT");
-    }
-
-    async postApi(queryUri , postData , postDataContentType , user){
-        let webPath = this.transToApiWebPath(queryUri , user);
-        webPath.getHeader().ContentType.Value = postDataContentType;
-        return await this.invokeApi(webPath , postData);
-    }
-
-
-    async invokeApi(webPath , postData , method){
-        let httpClient = new HttpClient();
-        try {
-            const res = await httpClient.post(webPath , postData , method);
-            try {
-                let resData = JSON.parse(res);
-                if(resData.error) throw new KeycloakError(res);
-                return resData;
-            } catch(parseErr){
-                return res;
-            }
-        } catch (err) {
-            throw err;
-        }
-    }
-
-
-    transToApiWebPath(queryUri , user){
-        let url = `https://${this.serverHost}:${this.serverPort}`;
-        let webPath = new EcHttpPath(url);
-        webPath.appendPath(queryUri);
-        
-        if( user ) webPath.setBearerToken(user.accessToken);
-        return webPath;
     }
 
     static open(serverHost , serverPort , keycloakRealm , keycloakClient){

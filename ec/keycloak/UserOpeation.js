@@ -11,7 +11,7 @@ class UserOperation {
 
     async find(opSession , username) {
         let queryUri = `auth/admin/realms/${this.keycloakAdapter.keycloakRealm.name}/users?username=${username}`;
-        return await this.keycloakAdapter.getApi(queryUri , opSession.keycloakUser);
+        return await this.keycloakAdapter.API.get(queryUri , opSession.keycloakUser);
     }
 
     async getID(opSession , username){
@@ -34,7 +34,7 @@ class UserOperation {
             ] , 
             enabled : true
         }
-        await this.keycloakAdapter.postApi(queryUri , JSON.stringify(postData) , "application/json" , opSession.keycloakUser);
+        await this.keycloakAdapter.API.post(queryUri , JSON.stringify(postData) , "application/json" , opSession.keycloakUser);
         return true;
     }
 
@@ -42,7 +42,7 @@ class UserOperation {
         const target_user_id = await this.getID(opSession , username);
         if (target_user_id){
             let queryUri = `auth/admin/realms/${this.keycloakAdapter.keycloakRealm.name}/users/${target_user_id}`;
-            await this.keycloakAdapter.deleteApi(queryUri , opSession.keycloakUser);
+            await this.keycloakAdapter.API.delete(queryUri , opSession.keycloakUser);
             return true;
         }  else throw new KeycloakError(`User[${username}] not exist!!`); 
     }
@@ -75,7 +75,7 @@ class UserOperation {
                     }
                 })
             }
-            await this.keycloakAdapter.putApi(queryUri , JSON.stringify(postData) , "application/json" , opSession.keycloakUser);
+            await this.keycloakAdapter.API.put(queryUri , JSON.stringify(postData) , "application/json" , opSession.keycloakUser);
             return true;
         } else throw new KeycloakError(`User[${username}] not exist!!`); 
     }
