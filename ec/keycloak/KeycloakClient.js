@@ -2,6 +2,7 @@
 
 class KeycloakClient {
 
+    id = null;
     name = null;
     secretText = null;
 

@@ -13,7 +13,7 @@ class KeycloakAdapter {
     keycloakClient = null;
 
 
-    async createSession(username , passord){
+    async openSession(username , passord){
         let queryUri = `auth/realms/${this.keycloakRealm.name}/protocol/openid-connect/token`;
         let postData = "";
         postData += "grant_type=password&";
@@ -26,11 +26,20 @@ class KeycloakAdapter {
         if (!resData.access_token)  throw new KeycloakError("access token missed!!")
         else {
             let user = KeycloakUser.build(resData.access_token);
-            let userInfoResData = await this.getUserInfo(user);
-            user.name = userInfoResData.name;
-            user.preferedName = userInfoResData.prefered_username;
-            user.email = userInfoResData.email;
-            return OperationSession.open(user);
+            const session = OperationSession.open(user);
+            if(true){
+                let userInfoResData = await this.getUserInfo(user);
+                user.name = userInfoResData.name;
+                user.preferedName = userInfoResData.prefered_username;
+                user.email = userInfoResData.email;
+            }
+
+            if(true){
+                let clients = await this.getRealmClients(session);
+                const clientData = clients.finds( client => client.clientId == this.keycloakClient.name);
+                this.keycloakClient.id = clientData.id;
+            }
+            return session;
         }
     }
 
@@ -45,7 +54,13 @@ class KeycloakAdapter {
     async getRealmClients( opSession ){
         let queryUri = `auth/admin/realms/${this.keycloakRealm.name}/clients`;
         const resData = await this.getApi(queryUri , opSession.keycloakUser);
-        console.log("resData = " , resData);
+        return resData;
+    }
+
+    async getClientRoles( opSession ){
+        let queryUri = `auth/admin/realms/${this.keycloakRealm.name}/clients/${this.keycloakClient.id}/roles`;
+        const resData = await this.getApi(queryUri , opSession.keycloakUser);
+        return resData;
     }
 
 
