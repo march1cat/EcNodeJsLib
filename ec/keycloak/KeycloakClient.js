@@ -1,5 +1,4 @@
 'use strict'
-const KeycloakRole = require("./KeycloakRole").KeycloakRole;
 class KeycloakClient {
 
     id = null;

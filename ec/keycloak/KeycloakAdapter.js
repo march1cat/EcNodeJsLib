@@ -4,6 +4,8 @@ const HttpClient = require("../net/HttpClient").HttpClient;
 const KeycloakError = require("./KeycloakError").KeycloakError;
 const KeycloakUser = require("./KeycloakUser").KeycloakUser;
 const OperationSession = require("./OperationSession").OperationSession;
+const KeycloakRole = require("./KeycloakRole").KeycloakRole;
+
 class KeycloakAdapter {
     
     serverHost = null;
@@ -67,6 +69,20 @@ class KeycloakAdapter {
             )
         });
         return roles;
+    }
+
+    async addUser(opSession , username , password){
+        let queryUri = `auth/admin/realms/${this.keycloakRealm.name}/users`;
+        let postData = {
+            username : username , 
+            password : password
+        }
+        const resData = await this.postApi(queryUri , JSON.stringify(postData) , "application/json" , opSession.keycloakUser);
+        return resData;
+    }
+
+    async mappingClientUserRole(){
+       
     }
 
 
