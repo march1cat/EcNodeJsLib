@@ -10,7 +10,7 @@ class UserOperation {
     }
 
     async find(opSession , username) {
-        let queryUri = `auth/admin/realms/${keycloakAdapter.keycloakRealm.name}/users?username=${username}`;
+        let queryUri = `auth/admin/realms/${this.keycloakAdapter.keycloakRealm.name}/users?username=${username}`;
         return await this.keycloakAdapter.getApi(queryUri , opSession.keycloakUser);
     }
 
@@ -23,7 +23,7 @@ class UserOperation {
     }
 
     async create(opSession , username , password){
-        let queryUri = `auth/admin/realms/${keycloakAdapter.keycloakRealm.name}/users`;
+        let queryUri = `auth/admin/realms/${this.keycloakAdapter.keycloakRealm.name}/users`;
         let postData = {
             username : username ,
             credentials : [
@@ -34,15 +34,15 @@ class UserOperation {
             ] , 
             enabled : true
         }
-        await keycloakAdapter.postApi(queryUri , JSON.stringify(postData) , "application/json" , opSession.keycloakUser);
+        await this.keycloakAdapter.postApi(queryUri , JSON.stringify(postData) , "application/json" , opSession.keycloakUser);
         return true;
     }
 
     async delete(opSession , username){
         const target_user_id = await this.getID(opSession , username);
         if (target_user_id){
-            let queryUri = `auth/admin/realms/${keycloakAdapter.keycloakRealm.name}/users/${target_user_id}`;
-            await keycloakAdapter.deleteApi(queryUri , opSession.keycloakUser);
+            let queryUri = `auth/admin/realms/${this.keycloakAdapter.keycloakRealm.name}/users/${target_user_id}`;
+            await this.keycloakAdapter.deleteApi(queryUri , opSession.keycloakUser);
             return true;
         }  else throw new KeycloakError(`User[${username}] not exist!!`); 
     }
@@ -56,7 +56,7 @@ class UserOperation {
         if(!options) throw new KeycloakError(`Update attributes can't be empty!!`); 
         const target_user_id = await this.getID(opSession , username);
         if (target_user_id){
-            let queryUri = `auth/admin/realms/${keycloakAdapter.keycloakRealm.name}/users`;
+            let queryUri = `auth/admin/realms/${this.keycloakAdapter.keycloakRealm.name}/users/${target_user_id}`;
             let postData = {}
     
             if(options){
@@ -75,7 +75,7 @@ class UserOperation {
                     }
                 })
             }
-            await keycloakAdapter.postApi(queryUri , JSON.stringify(postData) , "application/json" , opSession.keycloakUser);
+            await this.keycloakAdapter.putApi(queryUri , JSON.stringify(postData) , "application/json" , opSession.keycloakUser);
             return true;
         } else throw new KeycloakError(`User[${username}] not exist!!`); 
     }

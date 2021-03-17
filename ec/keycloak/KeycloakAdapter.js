@@ -77,9 +77,8 @@ class KeycloakAdapter {
     
 
     async mappingClientUserRole(opSession , username , keycloakRole){
-        let findUserResDatas = await this.findUser(opSession , username);
-        if(findUserResDatas && findUserResDatas.length) {
-            const target_user_id = findUserResDatas[0].id;
+        const target_user_id = await this.User.getID(opSession , username);
+        if(target_user_id) {
             let queryUri = `auth/admin/realms/${this.keycloakRealm.name}/users/${target_user_id}/`;
             queryUri += `role-mappings/clients/${this.keycloakClient.id}`;
             let postData = [
@@ -133,9 +132,20 @@ class KeycloakAdapter {
         }
     }
 
-    async postApi(queryUri , postData , postDataContentType , user , method){
+    async putApi(queryUri , postData , postDataContentType , user){
         let webPath = this.transToApiWebPath(queryUri , user);
         webPath.getHeader().ContentType.Value = postDataContentType;
+        return await this.invokeApi(webPath , postData , "PUT");
+    }
+
+    async postApi(queryUri , postData , postDataContentType , user){
+        let webPath = this.transToApiWebPath(queryUri , user);
+        webPath.getHeader().ContentType.Value = postDataContentType;
+        return await this.invokeApi(webPath , postData);
+    }
+
+
+    async invokeApi(webPath , postData , method){
         let httpClient = new HttpClient();
         try {
             const res = await httpClient.post(webPath , postData , method);
