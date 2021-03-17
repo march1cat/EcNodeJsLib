@@ -5,7 +5,7 @@ const KeycloakError = require("./KeycloakError").KeycloakError;
 const KeycloakUser = require("./KeycloakUser").KeycloakUser;
 const OperationSession = require("./OperationSession").OperationSession;
 const KeycloakRole = require("./KeycloakRole").KeycloakRole;
-
+const UserOperation = require("./UserOpeation").UserOperation;
 class KeycloakAdapter {
     
     serverHost = null;
@@ -13,6 +13,8 @@ class KeycloakAdapter {
     useHttps = false;
     keycloakRealm = null;
     keycloakClient = null;
+
+    User = new UserOperation(this);
 
 
     async openSession(username , passord){
@@ -52,21 +54,6 @@ class KeycloakAdapter {
         return resData;
     }
 
-    async findUser(opSession , username) {
-        let queryUri = `auth/admin/realms/${this.keycloakRealm.name}/users?username=${username}`;
-        return await this.getApi(queryUri , opSession.keycloakUser);
-    }
-
-    async deleteUser(opSession , username){
-        let findUserResDatas = await this.findUser(opSession , username);
-        if (findUserResDatas && findUserResDatas.length){
-            const target_user_id = findUserResDatas[0].id;
-            let queryUri = `auth/admin/realms/${this.keycloakRealm.name}/users/${target_user_id}`;
-            await this.deleteApi(queryUri , opSession.keycloakUser);
-            return true;
-        }  else throw new KeycloakError(`User[${username}] not exist!!`); 
-    }
-
     async getRealmClients( opSession ){
         let queryUri = `auth/admin/realms/${this.keycloakRealm.name}/clients`;
         const resData = await this.getApi(queryUri , opSession.keycloakUser);
@@ -85,20 +72,9 @@ class KeycloakAdapter {
         return roles;
     }
 
-    async addUser(opSession , username , password){
-        let queryUri = `auth/admin/realms/${this.keycloakRealm.name}/users`;
-        let postData = {
-            username : username ,
-            credentials : [
-                { type : "password",
-                  value : password,
-                  temporary : false
-                }
-            ]
-        }
-        await this.postApi(queryUri , JSON.stringify(postData) , "application/json" , opSession.keycloakUser);
-        return true;
-    }
+    
+
+    
 
     async mappingClientUserRole(opSession , username , keycloakRole){
         let findUserResDatas = await this.findUser(opSession , username);
@@ -157,12 +133,12 @@ class KeycloakAdapter {
         }
     }
 
-    async postApi(queryUri , postData , postDataContentType , user){
+    async postApi(queryUri , postData , postDataContentType , user , method){
         let webPath = this.transToApiWebPath(queryUri , user);
         webPath.getHeader().ContentType.Value = postDataContentType;
         let httpClient = new HttpClient();
         try {
-            const res = await httpClient.post(webPath , postData);
+            const res = await httpClient.post(webPath , postData , method);
             try {
                 let resData = JSON.parse(res);
                 if(resData.error) throw new KeycloakError(res);
