@@ -1,6 +1,7 @@
 'use strict'
 const KeycloakUser = require("./KeycloakUser").KeycloakUser;
 const KeycloakError = require("./KeycloakError").KeycloakError;
+const KeycloakClientUser = require("./KeycloakClientUser").KeycloakClientUser;
 const jwt_decode = require("jwt-decode");
 
 class AccessTokenAdpater {
@@ -10,7 +11,7 @@ class AccessTokenAdpater {
         this.keycloakAdapter = keycloakAdapter;
     }
 
-    async get(username , passord){
+    async get(username , passord , decodeJWT){
         let queryUri = `auth/realms/${this.keycloakAdapter.keycloakRealm.name}/protocol/openid-connect/token`;
         let postData = "";
         postData += "grant_type=password&";
@@ -21,7 +22,9 @@ class AccessTokenAdpater {
         let resData = await this.keycloakAdapter.API.post(queryUri , postData , "application/x-www-form-urlencoded");
         if (!resData.access_token)  throw new KeycloakError("access token missed!!")
         else {
-            return resData.access_token;
+            if(decodeJWT){
+                this.decodeJWTToClientUser(resData.access_token);
+            } else return resData.access_token;
         }
     }
 
@@ -32,9 +35,13 @@ class AccessTokenAdpater {
         return resData;
     }
 
-    async static toClientUser(accessToken){
+    decodeJWTToClientUser(accessToken){
         const decoded = jwt_decode(accessToken);
-        console.log("decoded = " , decoded);
+        let user = KeycloakClientUser.newInstance(accessToken);
+        user.expired = decoded.exp;
+        user.belongClient = decoded.azp;
+        user.roles = decoded.resource_access[user.belongClient].roles;
+        return user;
     }
 
 }
