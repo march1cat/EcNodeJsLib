@@ -54,10 +54,15 @@ class KeycloakAdapter {
         return resData;
     }
 
-    async getRealmClients( opSession ){
+    async getRealmClients( opSession , clientName){
         let queryUri = `auth/admin/realms/${this.keycloakRealm.name}/clients`;
         const resData = await this.API.get(queryUri , opSession.keycloakUser);
-        return resData;
+        if(clientName){
+            const targetClient = resData.find(
+                client => client.name == clientName
+            )
+            return targetClient;
+        } else return resData;
     }
 
     async getClientRoles( opSession ){
@@ -76,25 +81,7 @@ class KeycloakAdapter {
 
     
 
-    async mappingClientUserRole(opSession , username , keycloakRole){
-        const target_user_id = await this.User.getID(opSession , username);
-        if(target_user_id) {
-            let queryUri = `auth/admin/realms/${this.keycloakRealm.name}/users/${target_user_id}/`;
-            queryUri += `role-mappings/clients/${this.keycloakClient.id}`;
-            let postData = [
-                {
-                    id : keycloakRole.id , 
-                    name : keycloakRole.name , 
-                    composite : keycloakRole.composite ,
-                    clientRole : true , 
-                    containerId : this.keycloakClient.id
-                }
-            ]
-            const res = await this.API.post(queryUri , JSON.stringify(postData) , "application/json" ,opSession.keycloakUser);
-            return true;
-        } else throw new KeycloakError(`User[${username}] not exist!!`);  
-        
-    }
+    
 
     static open(serverHost , serverPort , keycloakRealm , keycloakClient){
         let adapter = new KeycloakAdapter();

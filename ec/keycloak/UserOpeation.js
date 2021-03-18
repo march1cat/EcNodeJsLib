@@ -1,5 +1,6 @@
 'use strict'
 const KeycloakError = require("./KeycloakError").KeycloakError;
+const KeycloakRole = require("./KeycloakRole").KeycloakRole;
 
 class UserOperation {
 
@@ -22,18 +23,26 @@ class UserOperation {
         }
     }
 
-    async create(opSession , username , password){
+    async create(opSession , username , password , options){
         let queryUri = `auth/admin/realms/${this.keycloakAdapter.keycloakRealm.name}/users`;
         let postData = {
             username : username ,
             credentials : [
-                { type : "password",
+                { 
+                  type : "password",
                   value : password,
                   temporary : false
                 }
             ] , 
             enabled : true
         }
+        if(options){
+            const keys = Object.keys(options);
+            keys.forEach(key => {
+                postData[key] = options[key];
+            });
+        }
+        
         await this.keycloakAdapter.API.post(queryUri , JSON.stringify(postData) , "application/json" , opSession.keycloakUser);
         return true;
     }
@@ -62,22 +71,66 @@ class UserOperation {
             if(options){
                 const keys = Object.keys(options);
                 keys.forEach(key => {
-                    if(key.toLocaleLowerCase() == 'password') {
-                        postData.credentials = [
-                            { 
-                                type : "password",
-                                value : options[key],
-                                temporary : false
-                            }
-                        ]
-                    } else {
-                        postData[key] = options[key];
-                    }
+                    postData[key] = options[key];
                 })
             }
             await this.keycloakAdapter.API.put(queryUri , JSON.stringify(postData) , "application/json" , opSession.keycloakUser);
             return true;
         } else throw new KeycloakError(`User[${username}] not exist!!`); 
+    }
+
+    async resetPassword(opSession , username , password){
+        const target_user_id = await this.getID(opSession , username);
+        if (target_user_id){
+            let queryUri = `auth/admin/realms/${this.keycloakAdapter.keycloakRealm.name}/users/${target_user_id}/reset-password`;
+            let postData = {
+                credentials : { 
+                    type : "password",
+                    value : password,
+                    temporary : false
+                  }
+            }
+            await this.keycloakAdapter.API.put(queryUri , JSON.stringify(postData) , "application/json" , opSession.keycloakUser);
+            return true;
+        } else throw new KeycloakError(`User[${username}] not exist!!`); 
+    }
+
+
+    async assignClientRole(opSession , username , keycloakRole){
+        const target_user_id = await this.getID(opSession , username);
+        if(target_user_id) {
+            let queryUri = `auth/admin/realms/${this.keycloakAdapter.keycloakRealm.name}/users/${target_user_id}/`;
+            queryUri += `role-mappings/clients/${this.keycloakAdapter.keycloakClient.id}`;
+            let postData = [
+                {
+                    id : keycloakRole.id , 
+                    name : keycloakRole.name , 
+                    composite : keycloakRole.composite ,
+                    clientRole : true , 
+                    containerId : this.keycloakAdapter.keycloakClient.id
+                }
+            ]
+            const res = await this.keycloakAdapter.API.post(queryUri , JSON.stringify(postData) , "application/json" ,opSession.keycloakUser);
+            return true;
+        } else throw new KeycloakError(`User[${username}] not exist!!`);  
+    }
+
+    async getBelongRoles(opSession , username ){
+        const target_user_id = await this.getID(opSession , username);
+        if(target_user_id) {
+            let queryUri = `auth/admin/realms/${this.keycloakAdapter.keycloakRealm.name}/users/${target_user_id}/`;
+            queryUri += `role-mappings/clients/${this.keycloakAdapter.keycloakClient.id}`;
+            const roleDatas = await this.keycloakAdapter.API.get(queryUri ,opSession.keycloakUser);
+            if(roleDatas && roleDatas.length){
+                const roles = [];
+                roleDatas.forEach(roleData => {
+                    roles.push(
+                        KeycloakRole.newInstance(roleData.id , roleData.name)
+                    )
+                });
+                return roles;
+            } else return [];
+        }
     }
 
 
