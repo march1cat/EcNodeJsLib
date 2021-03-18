@@ -23,7 +23,7 @@ class AccessTokenAdpater {
         if (!resData.access_token)  throw new KeycloakError("access token missed!!")
         else {
             if(decodeJWT){
-                this.decodeJWTToClientUser(resData.access_token);
+                return this.decodeJWTToClientUser(resData.access_token);
             } else return resData.access_token;
         }
     }
